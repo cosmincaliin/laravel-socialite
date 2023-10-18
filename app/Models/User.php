@@ -27,6 +27,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'google_id', // Agrega el campo google_id aquí
     ];
 
     /**

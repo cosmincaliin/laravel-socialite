@@ -1,5 +1,6 @@
 <?php
-
+use Illuminate\Support\Facades\Auth;
+use App\Models\User;
 use Illuminate\Support\Facades\Route;
 use Laravel\Socialite\Facades\Socialite;
 
@@ -33,8 +34,28 @@ Route::get('/login/google', function () {
 
 Route::get('/login/google/callback', function () {
     $user = Socialite::driver('google')->user();
-    // Handle the authenticated user here
+    
+    // Check if the user with this Google ID exists in your database
+    $existingUser = User::where('google_id', $user->id)->first();
+    
+    if ($existingUser) {
+        // Log in the existing user
+        Auth::login($existingUser);
+    } else {
+        // Create a new user and save their Google ID
+        $newUser = new User();
+        $newUser->name = $user->name;
+        $newUser->email = $user->email;
+        $newUser->google_id = $user->id; // Asigna el ID de Google
+        $newUser->save();
+        
+        // Log in the newly created user
+        Auth::login($newUser);
+    }
+    
+    return redirect()->route('dashboard');
 });
+
 
 Route::get('/login/apple', function () {
     return Socialite::driver('apple')->redirect();
